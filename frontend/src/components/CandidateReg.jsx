@@ -1,17 +1,30 @@
 import React, { useState } from 'react';
 
-function VoterReg() {
+function CandidateReg() {
   const [formData, setFormData] = useState({
     name: '',
     age: '',
     gender: '',
     mobile: '',
     email: '',
-    idNumber: '',
+    party: '',
+    bio: '',
+    agenda: null, // This will store the PDF file
     files: [],
+    receipt: null, // To store the image of receipt
+    candidateType: '', // For selecting the candidate type
   });
 
   const [errors, setErrors] = useState({});
+
+  // Predefined list of candidate types
+  const candidateTypes = [
+    'Chief Secretary',
+    'Secretary',
+    'Treasurer',
+    'Vice-President',
+    'Member',
+  ];
 
   const validate = () => {
     const newErrors = {};
@@ -20,8 +33,8 @@ function VoterReg() {
       newErrors.name = 'Name must contain only letters and spaces';
     }
 
-    if (!formData.age || isNaN(formData.age) || formData.age < 18 || formData.age>120) {
-      newErrors.age = 'Valid age (18+)&(>120)is required';
+    if (!formData.age || isNaN(formData.age) || formData.age < 25) {
+      newErrors.age = 'Valid age (25+) is required';
     }
 
     if (!formData.gender) {
@@ -36,8 +49,24 @@ function VoterReg() {
       newErrors.email = 'Enter a valid email address';
     }
 
-    if (!formData.idNumber) {
-      newErrors.idNumber = 'ID Proof Number is required';
+    if (!formData.party) {
+      newErrors.party = 'Party name is required';
+    }
+
+    if (!formData.bio) {
+      newErrors.bio = 'Candidate bio is required';
+    }
+
+    if (!formData.agenda) {
+      newErrors.agenda = 'Agenda (PDF) is required';
+    }
+
+    if (!formData.receipt) {
+      newErrors.receipt = 'Receipt of secret deposit is required';
+    }
+
+    if (!formData.candidateType) {
+      newErrors.candidateType = 'Candidate type is required';
     }
 
     if (formData.files.length < 2 || formData.files.length > 5) {
@@ -75,6 +104,26 @@ function VoterReg() {
     e.target.value = null; // allow re-upload of same files
   };
 
+  const handleAgendaChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type !== 'application/pdf') {
+      setErrors({ ...errors, agenda: 'Please upload a PDF file.' });
+    } else {
+      setFormData({ ...formData, agenda: file });
+      setErrors({ ...errors, agenda: '' });
+    }
+  };
+
+  const handleReceiptChange = (e) => {
+    const file = e.target.files[0];
+    if (file && !file.type.startsWith('image/')) {
+      setErrors({ ...errors, receipt: 'Please upload an image file (receipt).' });
+    } else {
+      setFormData({ ...formData, receipt: file });
+      setErrors({ ...errors, receipt: '' });
+    }
+  };
+
   const removeFile = (indexToRemove) => {
     const updatedFiles = formData.files.filter((_, index) => index !== indexToRemove);
     setFormData({ ...formData, files: updatedFiles });
@@ -90,7 +139,11 @@ function VoterReg() {
         gender: '',
         mobile: '',
         email: '',
-        idNumber: '',
+        party: '',
+        bio: '',
+        agenda: null,
+        receipt: null,
+        candidateType: '',
         files: [],
       });
       setErrors({});
@@ -98,8 +151,8 @@ function VoterReg() {
   };
 
   return (
-    <div className="p-4 max-w-xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Voter Registration</h2>
+    <div className="p-4 max-w-xl mx-3 md:mx-auto  bg-white rounded-2xl shadow-2xl  my-3 ">
+      <h2 className="text-2xl font-bold mb-4">Candidate Registration</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="name" className="block">Name</label>
@@ -135,15 +188,53 @@ function VoterReg() {
           <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} className="w-full p-2 border rounded" />
           {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
         </div>
-
         <div>
-          <label htmlFor="idNumber" className="block">ID Proof Number</label>
-          <input type="text" id="idNumber" name="idNumber" value={formData.idNumber} onChange={handleChange} className="w-full p-2 border rounded" />
-          {errors.idNumber && <p className="text-red-500 text-sm">{errors.idNumber}</p>}
+          <label htmlFor="candidateType" className="block">Candidate Type</label>
+          <select id="candidateType" name="candidateType" value={formData.candidateType} onChange={handleChange} className="w-full p-2 border rounded">
+            <option value="">Select Type</option>
+            {candidateTypes.map((type, index) => (
+              <option key={index} value={type}>{type}</option>
+            ))}
+          </select>
+          {errors.candidateType && <p className="text-red-500 text-sm">{errors.candidateType}</p>}
+        </div>
+        <div>
+          <label htmlFor="party" className="block">Party</label>
+          <input type="text" id="party" name="party" value={formData.party} onChange={handleChange} className="w-full p-2 border rounded" />
+          {errors.party && <p className="text-red-500 text-sm">{errors.party}</p>}
         </div>
 
         <div>
-          <label htmlFor="files" className="block">Upload ID Card Photos (2 to 5 images)</label>
+          <label htmlFor="bio" className="block">Candidate Bio</label>
+          <textarea
+            id="bio"
+            name="bio"
+            value={formData.bio}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+            rows="4"
+          ></textarea>
+          {errors.bio && <p className="text-red-500 text-sm">{errors.bio}</p>}
+        </div>
+
+        <div>
+          <label htmlFor="agenda" className="block">Upload Agenda (PDF)</label>
+          <input type="file" id="agenda" accept="application/pdf" onChange={handleAgendaChange} className="w-full p-2 border rounded" />
+          {formData.agenda && <p className="text-green-600 text-sm mt-1">✅ Agenda PDF uploaded</p>}
+          {errors.agenda && <p className="text-red-500 text-sm">{errors.agenda}</p>}
+        </div>
+
+        <div>
+          <label htmlFor="receipt" className="block">Upload Receipt of Secret Deposit (Image)</label>
+          <input type="file" id="receipt" accept="image/*" onChange={handleReceiptChange} className="w-full p-2 border rounded" />
+          {formData.receipt && <p className="text-green-600 text-sm mt-1">✅ Receipt uploaded</p>}
+          {errors.receipt && <p className="text-red-500 text-sm">{errors.receipt}</p>}
+        </div>
+
+         
+
+        <div>
+          <label htmlFor="files" className="block">Upload Supporting Documents (2 to 5 images)</label>
           <input type="file" id="files" multiple accept="image/*" onChange={handleFileChange} className="w-full p-2 border rounded" />
           {formData.files.length > 0 && (
             <div className="mt-2">
@@ -179,4 +270,4 @@ function VoterReg() {
   );
 }
 
-export default VoterReg;
+export default CandidateReg;
