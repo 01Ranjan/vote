@@ -11,6 +11,7 @@ function App() {
   return (
     <>
       <Navbar  title=" vote for ricr"/>
+      <ElectionCommitteeRole/>
       <Routes>
         <Route path="/Candidate" element={<CandidateReg />} />
         <Route path="/Committee" element={<ElectionCommitteeRole />} />
